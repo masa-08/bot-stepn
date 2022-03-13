@@ -1,0 +1,45 @@
+{
+  "name": "bot-stepn",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "ts-node-dev --require dotenv/config src/app.ts",
+    "open": "ngrok http 127.0.0.1:3000",
+    "lint": "eslint --fix --ext .js,.ts,.tsx ./src --ignore-path .gitignore",
+    "check-types": "tsc --project tsconfig.json --pretty --noEmit",
+    "validate": "npm-run-all --parallel check-types && lint-staged",
+    "prepare": "husky install"
+  },
+  "description": "Slack bot application for stepn",
+  "main": "src/app.ts",
+  "author": "Masaharu Shimizu",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^17.0.21",
+    "@typescript-eslint/eslint-plugin": "^5.14.0",
+    "@typescript-eslint/parser": "^5.14.0",
+    "eslint": "^8.11.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^6.0.0",
+    "eslint-plugin-standard": "^5.0.0",
+    "husky": "^7.0.4",
+    "lint-staged": "^12.3.5",
+    "ngrok": "^4.3.1",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.5.1",
+    "ts-node": "^10.7.0",
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.6.2"
+  },
+  "dependencies": {
+    "@slack/bolt": "^3.10.0",
+    "dotenv": "^16.0.0"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "printWidth": 100
+  }
+}
