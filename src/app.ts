@@ -15,7 +15,17 @@ app.event('message', async ({ event }) => {
   event.files?.forEach(async (e) => {
     if (e.url_private != null) {
       const buf = await analyzer.fetchImageAsBuffer(e.url_private)
-      buf.isSuccess() && (await analyzer.detectText(buf.value))
+      if (buf.isFailure()) {
+        console.error(buf.error)
+        return
+      }
+      const text = await analyzer.detectText(buf.value)
+      if (text.isFailure()) {
+        console.error(text.error)
+        return
+      }
+      const parsed = analyzer.parseText(text.value)
+      console.log(parsed)
     }
   })
 })

@@ -6,6 +6,14 @@ import { Failure, Result, Success } from './result'
 
 export class Analyzer {
   private readonly client: ImageAnnotatorClient
+  private readonly costRegex = /(?<num>\d+(\.\d+)?\s*)GST/
+  private readonly earningRegex = /\+\s*(?<num>\d+(\.\d+)?)/
+  private readonly identifier = {
+    REPAIR: 'REPAIR',
+    LEVEL_UP: 'LEVEL UP',
+    STEPN: 'Long press to identify and download APP', // 歩いてGSTを稼いだ時の画面識別用
+  } as const
+
   constructor() {
     this.client = new vision.ImageAnnotatorClient()
   }
@@ -28,6 +36,24 @@ export class Analyzer {
     }
     // 正常に文字を検出できる場合
     return new Success(result.textAnnotations[0].description)
+  }
+
+  public parseText(text: string): Result<number, Error> {
+    if (text.match(this.identifier.REPAIR) || text.match(this.identifier.LEVEL_UP)) {
+      const target = text.match(this.costRegex)
+      return target?.groups?.num != null
+        ? new Success(Number(target.groups.num))
+        : new Failure(new Error('Cannot extract values.'))
+    }
+
+    if (text.match(this.identifier.STEPN)) {
+      const target = text.match(this.earningRegex)
+      return target?.groups?.num != null
+        ? new Success(Number(target.groups.num))
+        : new Failure(new Error('Cannot extract values.'))
+    }
+
+    return new Failure(new Error('The expected string was not included.'))
   }
 
   public async fetchImageAsBuffer(url: string): Promise<Result<Buffer, Error>> {
