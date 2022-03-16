@@ -1,5 +1,5 @@
 import { App } from '@slack/bolt'
-import { Analyzer } from './analyzer'
+import { StepnAnalyzer } from './stepn'
 import { Slack } from './slack'
 
 const app = new App({
@@ -7,7 +7,7 @@ const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
 })
 
-const analyzer = new Analyzer()
+const analyzer = new StepnAnalyzer()
 
 app.event('message', async ({ event }) => {
   if (event.subtype !== 'file_share' || event.files == null) {

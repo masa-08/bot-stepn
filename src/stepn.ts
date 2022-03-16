@@ -1,14 +1,14 @@
-import { STATUS_CODES } from 'http'
 import vision, { ImageAnnotatorClient } from '@google-cloud/vision'
 
 import { Failure, Result, Success } from './result'
 
-type Statement = {
+export type StepnRecord = {
   value: number
   inOut: 'IN' | 'OUT'
+  item: 'Repair' | 'Level Up' | 'Move & Earn'
 }
 
-export class Analyzer {
+export class StepnAnalyzer {
   private readonly client: ImageAnnotatorClient
   private readonly costRegex = /(?<num>\d+(\.\d+)?\s*)GST/
   private readonly earningRegex = /\+\s*(?<num>\d+(\.\d+)?)/
@@ -22,7 +22,7 @@ export class Analyzer {
     this.client = new vision.ImageAnnotatorClient()
   }
 
-  public async parse(image: Buffer): Promise<Result<Statement, Error>> {
+  public async parse(image: Buffer): Promise<Result<StepnRecord, Error>> {
     const text = await this.detectText(image)
     if (text.isFailure()) {
       return text
@@ -50,18 +50,25 @@ export class Analyzer {
     return new Success(result.textAnnotations[0].description)
   }
 
-  private parseText(text: string): Result<Statement, Error> {
-    if (text.match(this.identifier.REPAIR) || text.match(this.identifier.LEVEL_UP)) {
+  private parseText(text: string): Result<StepnRecord, Error> {
+    if (text.match(this.identifier.REPAIR)) {
       const target = text.match(this.costRegex)
       return target?.groups?.num != null
-        ? new Success({ value: Number(target.groups.num), inOut: 'OUT' })
+        ? new Success({ value: Number(target.groups.num), inOut: 'OUT', item: 'Repair' })
+        : new Failure(new Error('Cannot extract values.'))
+    }
+
+    if (text.match(this.identifier.LEVEL_UP)) {
+      const target = text.match(this.costRegex)
+      return target?.groups?.num != null
+        ? new Success({ value: Number(target.groups.num), inOut: 'OUT', item: 'Level Up' })
         : new Failure(new Error('Cannot extract values.'))
     }
 
     if (text.match(this.identifier.STEPN)) {
       const target = text.match(this.earningRegex)
       return target?.groups?.num != null
-        ? new Success({ value: Number(target.groups.num), inOut: 'IN' })
+        ? new Success({ value: Number(target.groups.num), inOut: 'IN', item: 'Move & Earn' })
         : new Failure(new Error('Cannot extract values.'))
     }
 
