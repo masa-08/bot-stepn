@@ -1,17 +1,48 @@
 import { App } from '@slack/bolt'
+import { Analyzer } from './analyzer'
+import { Slack } from './slack'
 
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
   signingSecret: process.env.SLACK_SIGNING_SECRET,
 })
 
+const analyzer = new Analyzer()
+
 app.event('message', async ({ event }) => {
-  if (event.subtype !== 'file_share') {
+  if (event.subtype !== 'file_share' || event.files == null) {
     return
   }
-  console.log(event.files)
+  const images = await Promise.all(
+    event.files.map(async (f) => {
+      if (f.url_private != null) {
+        const result = await Slack.fetchImage(f.url_private)
+        if (result.isSuccess()) {
+          return result.value
+        } else {
+          console.error(result.error)
+        }
+      }
+    })
+  )
+
+  const results = await Promise.all(
+    images.map(async (image) => {
+      if (image == null) {
+        return
+      }
+      const result = await analyzer.parse(image)
+      if (result.isSuccess()) {
+        return result.value
+      } else {
+        console.error(result.error)
+      }
+    })
+  )
+
+  console.log(results)
 })
 ;(async () => {
   await app.start(process.env.PORT || 3000)
-  console.log('⚡️ Bolt app is running!')
+  console.log('⚡️ STEPN BOT is running!')
 })()
