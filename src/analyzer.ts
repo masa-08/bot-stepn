@@ -1,8 +1,12 @@
 import { STATUS_CODES } from 'http'
-import axios from 'axios'
 import vision, { ImageAnnotatorClient } from '@google-cloud/vision'
 
 import { Failure, Result, Success } from './result'
+
+type Statement = {
+  value: number
+  inOut: 'IN' | 'OUT'
+}
 
 export class Analyzer {
   private readonly client: ImageAnnotatorClient
@@ -18,7 +22,15 @@ export class Analyzer {
     this.client = new vision.ImageAnnotatorClient()
   }
 
-  public async detectText(image: Buffer): Promise<Result<string, Error>> {
+  public async parse(image: Buffer): Promise<Result<Statement, Error>> {
+    const text = await this.detectText(image)
+    if (text.isFailure()) {
+      return text
+    }
+    return await this.parseText(text.value)
+  }
+
+  private async detectText(image: Buffer): Promise<Result<string, Error>> {
     const [result] = await this.client.textDetection(image)
     // Vision APIでパースできない不正なBufferファイルの場合
     if (result.error != null) {
@@ -38,31 +50,21 @@ export class Analyzer {
     return new Success(result.textAnnotations[0].description)
   }
 
-  public parseText(text: string): Result<number, Error> {
+  private parseText(text: string): Result<Statement, Error> {
     if (text.match(this.identifier.REPAIR) || text.match(this.identifier.LEVEL_UP)) {
       const target = text.match(this.costRegex)
       return target?.groups?.num != null
-        ? new Success(Number(target.groups.num))
+        ? new Success({ value: Number(target.groups.num), inOut: 'OUT' })
         : new Failure(new Error('Cannot extract values.'))
     }
 
     if (text.match(this.identifier.STEPN)) {
       const target = text.match(this.earningRegex)
       return target?.groups?.num != null
-        ? new Success(Number(target.groups.num))
+        ? new Success({ value: Number(target.groups.num), inOut: 'IN' })
         : new Failure(new Error('Cannot extract values.'))
     }
 
     return new Failure(new Error('The expected string was not included.'))
-  }
-
-  public async fetchImageAsBuffer(url: string): Promise<Result<Buffer, Error>> {
-    const res = await axios.get(url, {
-      responseType: 'arraybuffer',
-      headers: { Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}` },
-    })
-    return res.statusText === STATUS_CODES['200']
-      ? new Success(Buffer.from(res.data))
-      : new Failure(new Error('Cannot fetch image from your slack.'))
   }
 }

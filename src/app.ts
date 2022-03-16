@@ -1,5 +1,6 @@
 import { App } from '@slack/bolt'
 import { Analyzer } from './analyzer'
+import { Slack } from './slack'
 
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
@@ -9,25 +10,37 @@ const app = new App({
 const analyzer = new Analyzer()
 
 app.event('message', async ({ event }) => {
-  if (event.subtype !== 'file_share') {
+  if (event.subtype !== 'file_share' || event.files == null) {
     return
   }
-  event.files?.forEach(async (e) => {
-    if (e.url_private != null) {
-      const buf = await analyzer.fetchImageAsBuffer(e.url_private)
-      if (buf.isFailure()) {
-        console.error(buf.error)
+  const images = await Promise.all(
+    event.files.map(async (f) => {
+      if (f.url_private != null) {
+        const result = await Slack.fetchImage(f.url_private)
+        if (result.isSuccess()) {
+          return result.value
+        } else {
+          console.error(result.error)
+        }
+      }
+    })
+  )
+
+  const results = await Promise.all(
+    images.map(async (image) => {
+      if (image == null) {
         return
       }
-      const text = await analyzer.detectText(buf.value)
-      if (text.isFailure()) {
-        console.error(text.error)
-        return
+      const result = await analyzer.parse(image)
+      if (result.isSuccess()) {
+        return result.value
+      } else {
+        console.error(result.error)
       }
-      const parsed = analyzer.parseText(text.value)
-      console.log(parsed)
-    }
-  })
+    })
+  )
+
+  console.log(results)
 })
 ;(async () => {
   await app.start(process.env.PORT || 3000)
