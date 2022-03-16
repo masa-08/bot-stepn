@@ -37,7 +37,8 @@
     "@google-cloud/vision": "^2.4.2",
     "@slack/bolt": "^3.10.0",
     "axios": "^0.26.1",
-    "dotenv": "^16.0.0"
+    "dotenv": "^16.0.0",
+    "googleapis": "^97.0.0"
   },
   "prettier": {
     "semi": false,
