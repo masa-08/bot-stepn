@@ -3,9 +3,10 @@ import vision, { ImageAnnotatorClient } from '@google-cloud/vision'
 import { Failure, Result, Success } from './result'
 
 export type StepnRecord = {
-  value: number
+  title: 'Repair' | 'Level Up' | 'Move & Earn'
   inOut: 'IN' | 'OUT'
-  item: 'Repair' | 'Level Up' | 'Move & Earn'
+  currency: 'GST'
+  price: number
 }
 
 export class StepnAnalyzer {
@@ -54,21 +55,36 @@ export class StepnAnalyzer {
     if (text.match(this.identifier.REPAIR)) {
       const target = text.match(this.costRegex)
       return target?.groups?.num != null
-        ? new Success({ value: Number(target.groups.num), inOut: 'OUT', item: 'Repair' })
+        ? new Success({
+            title: 'Repair',
+            inOut: 'OUT',
+            currency: 'GST',
+            price: Number(target.groups.num),
+          })
         : new Failure(new Error('Cannot extract values.'))
     }
 
     if (text.match(this.identifier.LEVEL_UP)) {
       const target = text.match(this.costRegex)
       return target?.groups?.num != null
-        ? new Success({ value: Number(target.groups.num), inOut: 'OUT', item: 'Level Up' })
+        ? new Success({
+            title: 'Level Up',
+            inOut: 'OUT',
+            currency: 'GST',
+            price: Number(target.groups.num),
+          })
         : new Failure(new Error('Cannot extract values.'))
     }
 
     if (text.match(this.identifier.STEPN)) {
       const target = text.match(this.earningRegex)
       return target?.groups?.num != null
-        ? new Success({ value: Number(target.groups.num), inOut: 'IN', item: 'Move & Earn' })
+        ? new Success({
+            title: 'Move & Earn',
+            inOut: 'IN',
+            currency: 'GST',
+            price: Number(target.groups.num),
+          })
         : new Failure(new Error('Cannot extract values.'))
     }
 
