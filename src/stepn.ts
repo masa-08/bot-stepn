@@ -20,7 +20,12 @@ export class StepnAnalyzer {
   } as const
 
   constructor() {
-    this.client = new vision.ImageAnnotatorClient()
+    this.client = new vision.ImageAnnotatorClient({
+      credentials: {
+        client_email: process.env.GOOGLE_SERVICE_ACCOUNT,
+        private_key: process.env.GOOGLE_PRIVATE_KEY,
+      },
+    })
   }
 
   public async parse(image: Buffer): Promise<Result<StepnRecord, Error>> {
