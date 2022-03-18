@@ -3,7 +3,6 @@ import { STATUS_CODES } from 'http'
 import { DateTime } from 'luxon'
 const sheets = google.sheets('v4')
 
-import { Config } from './config'
 import { StepnRecord } from './stepn'
 import { Failure, Result, Success } from './result'
 
@@ -39,7 +38,6 @@ export class Sheet {
   constructor(sheetId: string, email: string, key: string) {
     this.sheetId = sheetId
     this.jwt = new google.auth.JWT({
-      // keyFile: process.env.GOOGLE_APPLICATION_CREDENTIALS,
       email,
       key,
       scopes: [
