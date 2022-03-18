@@ -2,16 +2,20 @@
   "name": "bot-stepn",
   "private": true,
   "version": "0.1.0",
+  "engines": {
+    "node": "16.x"
+  },
   "scripts": {
     "dev": "ts-node-dev -r dotenv/config src/app.ts dotenv_config_path=./.env.development",
     "open": "ngrok http 127.0.0.1:3000",
     "lint": "eslint --fix --ext .js,.ts,.tsx ./src --ignore-path .gitignore",
     "check-types": "tsc --project tsconfig.json --pretty --noEmit",
     "validate": "npm-run-all --parallel check-types && lint-staged",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "start": "node dist/app.js"
   },
   "description": "Slack bot application for stepn",
-  "main": "src/app.ts",
+  "main": "dist/app.js",
   "author": "Masaharu Shimizu",
   "license": "MIT",
   "devDependencies": {
