@@ -12,7 +12,9 @@
     "check-types": "tsc --project tsconfig.json --pretty --noEmit",
     "validate": "npm-run-all --parallel check-types && lint-staged",
     "prepare": "husky install",
-    "start": "node dist/app.js"
+    "build": "tsc",
+    "start": "node dist/app.js",
+    "postinstall": "yarn build"
   },
   "description": "Slack bot application for stepn",
   "main": "dist/app.js",
