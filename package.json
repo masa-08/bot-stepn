@@ -15,7 +15,7 @@
     "start": "node dist/app.js"
   },
   "description": "Slack bot application for stepn",
-  "main": "src/app.ts",
+  "main": "dist/app.js",
   "author": "Masaharu Shimizu",
   "license": "MIT",
   "devDependencies": {
