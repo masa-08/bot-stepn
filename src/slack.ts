@@ -4,10 +4,10 @@ import axios from 'axios'
 import { Failure, Result, Success } from './result'
 
 export class Slack {
-  static async fetchImage(url: string): Promise<Result<Buffer, Error>> {
+  static async fetchImage(url: string, token: string): Promise<Result<Buffer, Error>> {
     const res = await axios.get(url, {
       responseType: 'arraybuffer',
-      headers: { Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}` },
+      headers: { Authorization: `Bearer ${token}` },
     })
     return res.statusText === STATUS_CODES['200']
       ? new Success(Buffer.from(res.data))

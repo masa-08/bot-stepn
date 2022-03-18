@@ -19,11 +19,11 @@ export class StepnAnalyzer {
     STEPN: 'Long press to identify and download APP', // 歩いてGSTを稼いだ時の画面識別用
   } as const
 
-  constructor() {
+  constructor(email: string, key: string) {
     this.client = new vision.ImageAnnotatorClient({
       credentials: {
-        client_email: process.env.GOOGLE_SERVICE_ACCOUNT,
-        private_key: process.env.GOOGLE_PRIVATE_KEY,
+        client_email: email,
+        private_key: key,
       },
     })
   }
