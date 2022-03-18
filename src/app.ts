@@ -2,14 +2,17 @@ import { App } from '@slack/bolt'
 import { StepnAnalyzer } from './stepn'
 import { Slack } from './slack'
 import { Sheet } from './sheet'
+import { Config } from './config'
+
+const config = new Config()
 
 const app = new App({
-  token: process.env.SLACK_BOT_TOKEN,
-  signingSecret: process.env.SLACK_SIGNING_SECRET,
+  token: config.slackToken,
+  signingSecret: config.slackSecret,
 })
 
-const analyzer = new StepnAnalyzer()
-const sheet = new Sheet()
+const analyzer = new StepnAnalyzer(config.serviceAccount, config.privateKey)
+const sheet = new Sheet(config.sheetId, config.serviceAccount, config.privateKey)
 
 app.event('message', async ({ event }) => {
   if (event.subtype !== 'file_share' || event.files == null) {
@@ -18,7 +21,7 @@ app.event('message', async ({ event }) => {
   const images = await Promise.all(
     event.files.map(async (f) => {
       if (f.url_private != null) {
-        const result = await Slack.fetchImage(f.url_private)
+        const result = await Slack.fetchImage(f.url_private, config.slackToken)
         return result.isSuccess() ? result.value : console.error(result.error)
       }
     })
@@ -39,6 +42,6 @@ app.event('message', async ({ event }) => {
   }
 })
 ;(async () => {
-  await app.start(process.env.PORT || 3000)
+  await app.start(config.port)
   console.log('⚡️ STEPN BOT is running!')
 })()

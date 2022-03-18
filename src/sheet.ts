@@ -1,10 +1,10 @@
 import { google } from 'googleapis'
 import { STATUS_CODES } from 'http'
 import { DateTime } from 'luxon'
-import { Failure, Result, Success } from './result'
 const sheets = google.sheets('v4')
 
 import { StepnRecord } from './stepn'
+import { Failure, Result, Success } from './result'
 
 class Dao {
   private readonly title
@@ -35,12 +35,11 @@ class Dao {
 export class Sheet {
   private readonly sheetId: string
   private readonly jwt
-  constructor() {
-    this.sheetId = process.env.GOOGLE_SHEET_ID || ''
+  constructor(sheetId: string, email: string, key: string) {
+    this.sheetId = sheetId
     this.jwt = new google.auth.JWT({
-      // keyFile: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-      email: process.env.GOOGLE_SERVICE_ACCOUNT,
-      key: process.env.GOOGLE_PRIVATE_KEY,
+      email,
+      key,
       scopes: [
         'https://www.googleapis.com/auth/drive',
         'https://www.googleapis.com/auth/drive.file',

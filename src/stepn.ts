@@ -19,8 +19,13 @@ export class StepnAnalyzer {
     STEPN: 'Long press to identify and download APP', // 歩いてGSTを稼いだ時の画面識別用
   } as const
 
-  constructor() {
-    this.client = new vision.ImageAnnotatorClient()
+  constructor(email: string, key: string) {
+    this.client = new vision.ImageAnnotatorClient({
+      credentials: {
+        client_email: email,
+        private_key: key,
+      },
+    })
   }
 
   public async parse(image: Buffer): Promise<Result<StepnRecord, Error>> {
