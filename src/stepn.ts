@@ -1,14 +1,15 @@
-import { STATUS_CODES } from 'http'
 import vision, { ImageAnnotatorClient } from '@google-cloud/vision'
 
 import { Failure, Result, Success } from './result'
 
-type Statement = {
-  value: number
+export type StepnRecord = {
+  title: 'Repair' | 'Level Up' | 'Move & Earn'
   inOut: 'IN' | 'OUT'
+  currency: 'GST'
+  price: number
 }
 
-export class Analyzer {
+export class StepnAnalyzer {
   private readonly client: ImageAnnotatorClient
   private readonly costRegex = /(?<num>\d+(\.\d+)?\s*)GST/
   private readonly earningRegex = /\+\s*(?<num>\d+(\.\d+)?)/
@@ -22,7 +23,7 @@ export class Analyzer {
     this.client = new vision.ImageAnnotatorClient()
   }
 
-  public async parse(image: Buffer): Promise<Result<Statement, Error>> {
+  public async parse(image: Buffer): Promise<Result<StepnRecord, Error>> {
     const text = await this.detectText(image)
     if (text.isFailure()) {
       return text
@@ -50,18 +51,40 @@ export class Analyzer {
     return new Success(result.textAnnotations[0].description)
   }
 
-  private parseText(text: string): Result<Statement, Error> {
-    if (text.match(this.identifier.REPAIR) || text.match(this.identifier.LEVEL_UP)) {
+  private parseText(text: string): Result<StepnRecord, Error> {
+    if (text.match(this.identifier.REPAIR)) {
       const target = text.match(this.costRegex)
       return target?.groups?.num != null
-        ? new Success({ value: Number(target.groups.num), inOut: 'OUT' })
+        ? new Success({
+            title: 'Repair',
+            inOut: 'OUT',
+            currency: 'GST',
+            price: Number(target.groups.num),
+          })
+        : new Failure(new Error('Cannot extract values.'))
+    }
+
+    if (text.match(this.identifier.LEVEL_UP)) {
+      const target = text.match(this.costRegex)
+      return target?.groups?.num != null
+        ? new Success({
+            title: 'Level Up',
+            inOut: 'OUT',
+            currency: 'GST',
+            price: Number(target.groups.num),
+          })
         : new Failure(new Error('Cannot extract values.'))
     }
 
     if (text.match(this.identifier.STEPN)) {
       const target = text.match(this.earningRegex)
       return target?.groups?.num != null
-        ? new Success({ value: Number(target.groups.num), inOut: 'IN' })
+        ? new Success({
+            title: 'Move & Earn',
+            inOut: 'IN',
+            currency: 'GST',
+            price: Number(target.groups.num),
+          })
         : new Failure(new Error('Cannot extract values.'))
     }
 

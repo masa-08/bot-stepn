@@ -1,13 +1,15 @@
 import { App } from '@slack/bolt'
-import { Analyzer } from './analyzer'
+import { StepnAnalyzer } from './stepn'
 import { Slack } from './slack'
+import { Sheet } from './sheet'
 
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
   signingSecret: process.env.SLACK_SIGNING_SECRET,
 })
 
-const analyzer = new Analyzer()
+const analyzer = new StepnAnalyzer()
+const sheet = new Sheet()
 
 app.event('message', async ({ event }) => {
   if (event.subtype !== 'file_share' || event.files == null) {
@@ -17,30 +19,24 @@ app.event('message', async ({ event }) => {
     event.files.map(async (f) => {
       if (f.url_private != null) {
         const result = await Slack.fetchImage(f.url_private)
-        if (result.isSuccess()) {
-          return result.value
-        } else {
-          console.error(result.error)
-        }
+        return result.isSuccess() ? result.value : console.error(result.error)
       }
     })
   )
 
-  const results = await Promise.all(
-    images.map(async (image) => {
-      if (image == null) {
-        return
-      }
-      const result = await analyzer.parse(image)
-      if (result.isSuccess()) {
-        return result.value
-      } else {
-        console.error(result.error)
-      }
-    })
+  const parseResults = await Promise.all(
+    images
+      .flatMap((x) => x ?? []) // undefinedを除去
+      .map(async (image) => {
+        const result = await analyzer.parse(image)
+        return result.isSuccess() ? result.value : console.error(result.error)
+      })
   )
 
-  console.log(results)
+  const appendResult = await sheet.append(parseResults.flatMap((x) => x ?? []))
+  if (appendResult.isFailure()) {
+    console.error(appendResult.error)
+  }
 })
 ;(async () => {
   await app.start(process.env.PORT || 3000)
