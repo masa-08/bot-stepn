@@ -3,16 +3,20 @@ export class Config {
   readonly slackSecret: string
   readonly slackToken: string
   readonly sheetId: string
-  readonly serviceAccount: string
-  readonly privateKey: string
+  readonly googleCredentials: string
+  readonly googleServiceAccount: string
+  readonly googlePrivateKey: string
   constructor() {
     this.checkEnvironmentVariables()
     this.port = process.env.PORT || 3000
     this.slackSecret = process.env.SLACK_SIGNING_SECRET!
     this.slackToken = process.env.SLACK_BOT_TOKEN!
     this.sheetId = process.env.GOOGLE_SHEET_ID!
-    this.serviceAccount = process.env.GOOGLE_SERVICE_ACCOUNT!
-    this.privateKey = process.env.GOOGLE_PRIVATE_KEY!
+    this.googleCredentials = process.env.GOOGLE_CREDENTIALS!
+
+    const keys = JSON.parse(this.googleCredentials)
+    this.googleServiceAccount = keys['client_email']
+    this.googlePrivateKey = keys['private_key']
   }
 
   private checkEnvironmentVariables = () => {
@@ -28,12 +32,8 @@ export class Config {
       console.error(new Error('Environment variable `GOOGLE_SHEET_ID` is not set.'))
       process.exit(1)
     }
-    if (!process.env.GOOGLE_SERVICE_ACCOUNT) {
-      console.error(new Error('Environment variable `GOOGLE_SERVICE_ACCOUNT` is not set.'))
-      process.exit(1)
-    }
-    if (!process.env.GOOGLE_PRIVATE_KEY) {
-      console.error(new Error('Environment variable `GOOGLE_PRIVATE_KEY` is not set.'))
+    if (!process.env.GOOGLE_CREDENTIALS!) {
+      console.error(new Error('Environment variable `GOOGLE_CREDENTIALS` is not set.'))
       process.exit(1)
     }
   }

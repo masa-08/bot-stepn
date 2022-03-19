@@ -11,8 +11,8 @@ const app = new App({
   signingSecret: config.slackSecret,
 })
 
-const analyzer = new StepnAnalyzer(config.serviceAccount, config.privateKey)
-const sheet = new Sheet(config.sheetId, config.serviceAccount, config.privateKey)
+const analyzer = new StepnAnalyzer(config.googleCredentials)
+const sheet = new Sheet(config.sheetId, config.googleServiceAccount, config.googlePrivateKey)
 
 app.event('message', async ({ event }) => {
   if (event.subtype !== 'file_share' || event.files == null) {
