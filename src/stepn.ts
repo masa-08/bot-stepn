@@ -1,4 +1,5 @@
 import vision, { ImageAnnotatorClient } from '@google-cloud/vision'
+import { auth } from 'google-auth-library'
 
 import { Failure, Result, Success } from './result'
 
@@ -19,12 +20,10 @@ export class StepnAnalyzer {
     STEPN: 'Long press to identify and download APP', // 歩いてGSTを稼いだ時の画面識別用
   } as const
 
-  constructor(email: string, key: string) {
+  constructor(credentials: string) {
+    const keys = JSON.parse(credentials)
     this.client = new vision.ImageAnnotatorClient({
-      credentials: {
-        client_email: email,
-        private_key: key,
-      },
+      authClient: auth.fromJSON(keys),
     })
   }
 
