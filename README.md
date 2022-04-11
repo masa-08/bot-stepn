@@ -44,12 +44,15 @@ It analyzes the following images and records the GST earned or used in the game 
 
 ### Record GST earned by walking
 Post the results screen to the Slack channel after the walk.
-! [result](https://user-images.githubusercontent.com/12569534/162848492-212d7c0e-a75d-4ff4-a517-3ad7c307d34f.JPG)
+
+![result](https://user-images.githubusercontent.com/12569534/162848492-212d7c0e-a75d-4ff4-a517-3ad7c307d34f.JPG)
 
 ### Record GST spent repairing shoes
 Take the following screenshot and post it to Slack
-! [repair](https://user-images.githubusercontent.com/12569534/162848476-22807d45-0883-4316-b768-611382bc3a62.PNG)
+
+![repair](https://user-images.githubusercontent.com/12569534/162848476-22807d45-0883-4316-b768-611382bc3a62.PNG)
 
 ### Record GST consumed by leveling up shoes
 Take the following screenshot and post it to Slack
-! [levelup](https://user-images.githubusercontent.com/12569534/162848495-ed98c108-1a2d-4ac0-8e37-ab2a7303d6e7.PNG)
+
+![levelup](https://user-images.githubusercontent.com/12569534/162848495-ed98c108-1a2d-4ac0-8e37-ab2a7303d6e7.PNG)
